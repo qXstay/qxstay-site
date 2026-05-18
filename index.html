@@ -2462,15 +2462,35 @@ body.menu-open {
   /* dark screenshots list — NeuroFox AI has dark interface */
   const darkSrcs = ['assets/case-neurofox-ai-hero.webp', 'assets/case-neurofox-ai-detail.png', 'case-neurofox-ai'];
   const isDarkSrc = src => darkSrcs.some(d => src && src.includes(d.split('.')[0]));
+  let lightboxToken = 0;
   const openLb = (src, alt) => {
-    lbImg.src = src;
-    lbImg.alt = alt || '';
+    const token = ++lightboxToken;
+    lbImg.removeAttribute('src');
+    lbImg.alt = '';
     lbCard.classList.toggle('is-dark', isDarkSrc(src));
     lb.classList.add('is-open');
     document.body.style.overflow = 'hidden';
+    const nextImg = new Image();
+    nextImg.onload = async () => {
+      try {
+        if (nextImg.decode) await nextImg.decode();
+      } catch {}
+      if (token !== lightboxToken) return;
+      lbImg.src = src;
+      lbImg.alt = alt || '';
+    };
+    nextImg.onerror = () => {
+      if (token !== lightboxToken) return;
+      lbImg.removeAttribute('src');
+      lbImg.alt = '';
+    };
+    nextImg.src = src;
   };
   const closeLb = () => {
+    lightboxToken++;
     lb.classList.remove('is-open');
+    lbImg.removeAttribute('src');
+    lbImg.alt = '';
     document.body.style.overflow = '';
   };
   document.querySelectorAll('[data-lightbox]').forEach(el => {
