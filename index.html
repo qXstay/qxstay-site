@@ -1,0 +1,2488 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>qXstay — прикладная автоматизация для малого бизнеса</title>
+<meta name="description" content="Автоматизация заявок, оплат и клиентов через Telegram-ботов, Mini Apps, AI-ассистентов и mini-CRM.">
+<link rel="canonical" href="https://qxstay.ru/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%23d96b4f'/></svg>" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:title" content="qXstay — автоматизация заявок, оплат и клиентов">
+<meta property="og:description" content="Автоматизация заявок, оплат и клиентов через Telegram, AI и mini-CRM.">
+<meta property="og:image" content="https://qxstay.ru/assets/og-qxstay.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   TOKENS
+   ═══════════════════════════════════════════════ */
+:root {
+  --paper:      #efe7d2;
+  --paper-soft: #f6f0df;
+  --paper-2:    #e8dfca;
+  --ink:        #171513;
+  --ink-2:      #3a3833;
+  --muted:      #736b5d;
+  --line:       rgba(23,21,19,.14);
+  --line-strong:rgba(23,21,19,.22);
+  --coral:      #d96b4f;
+  --coral-dark: #9f412f;
+  --olive:      #66704a;
+  --night:      #1d1915;
+  --night-2:    #2a251f;
+
+  --serif:  'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --sans:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --mono:   'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+  --container: 1200px;
+  --gutter:    clamp(20px, 4vw, 48px);
+  --ease:      cubic-bezier(.23, 1, .32, 1);
+  --radius:    12px;
+  --radius-sm: 8px;
+}
+
+/* ═══════════════════════════════════════════════
+   RESET
+   ═══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box }
+html, body { margin: 0; padding: 0 }
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto } }
+body {
+  font-family: var(--sans);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.6;
+  letter-spacing: normal;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+img, svg { display: block; max-width: 100% }
+a { color: inherit; text-decoration: none }
+button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit }
+
+/* ═══════════════════════════════════════════════
+   LAYOUT PRIMITIVES
+   ═══════════════════════════════════════════════ */
+.wrap {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+}
+.section {
+  padding: clamp(64px, 8vw, 110px) 0;
+  border-top: 1px solid var(--line-strong);
+}
+section[id], .cta-final[id] { scroll-margin-top: 80px }
+.section-head {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: clamp(48px, 6vw, 80px);
+  max-width: 780px;
+}
+.section-head h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+.section-head .lede {
+  font-size: 17px;
+  color: var(--ink-2);
+  max-width: 640px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════
+   GLOBAL TEXT — prevent broken Russian words
+   ═══════════════════════════════════════════════ */
+body, p, li, a, span, h1, h2, h3, h4, h5, h6, button, .btn, .hero-lead, .about-text, .case-desc, .cap p, .method-step p, .faq-body, .fmt p, .nav-links a, .nav-cta {
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+/* letter-spacing ONLY on mono/uppercase labels */
+.eyebrow, .hero-label, .cap-num, .case-num, .method-num, .fmt-tag, .marquee-item, .collage-tag, .plate-cap, .plate-anno, .plate-index-item, .topbar, .side-rail {
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+/* ═══════════════════════════════════════════════
+   TOPBAR — editorial meta bar
+   ═══════════════════════════════════════════════ */
+.topbar {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  padding: 8px 0;
+  line-height: 1;
+}
+.topbar-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.topbar-left, .topbar-center, .topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.topbar-sep { opacity: .35 }
+.topbar-status {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--olive);
+  animation: statusPulse 2s ease-in-out infinite;
+}
+@keyframes statusPulse {
+  0%, 100% { opacity: 1 }
+  50% { opacity: .4 }
+}
+/* ═══════════════════════════════════════════════
+   SIDE RAILS — editorial frame (desktop ≥1200px)
+   ═══════════════════════════════════════════════ */
+.side-rail {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  writing-mode: vertical-rl;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: .32;
+  pointer-events: none;
+  z-index: 10;
+  white-space: nowrap;
+  user-select: none;
+  transition: opacity .3s var(--ease);
+}
+.side-rail--left {
+  left: 16px;
+  text-orientation: mixed;
+}
+.side-rail--right {
+  right: 16px;
+  text-orientation: mixed;
+  transform: translateY(-50%) rotate(180deg);
+}
+@media (max-width: 1199px) {
+  .side-rail { display: none }
+}
+
+/* ═══════════════════════════════════════════════
+   PROGRESS BAR
+   ═══════════════════════════════════════════════ */
+.progress {
+  position: fixed; top: 0; left: 0;
+  height: 2px; width: 0;
+  background: var(--coral);
+  z-index: 100;
+  transition: width 80ms linear;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════
+   HEADER — frosted, headroom-aware
+   ═══════════════════════════════════════════════ */
+.header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(239, 231, 210, .86);
+  backdrop-filter: saturate(140%) blur(12px);
+  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: border-color .2s var(--ease), transform .3s var(--ease), background .2s var(--ease);
+}
+.header.is-stuck { border-bottom-color: var(--line) }
+.header.is-hidden { transform: translateY(-100%) }
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  height: 60px;
+}
+.brand {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.brand .dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--coral);
+}
+.nav-links {
+  display: flex;
+  gap: 24px;
+  margin-left: auto;
+  align-items: center;
+}
+.nav-links a {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+  padding: 6px 0;
+  position: relative;
+  transition: color .18s var(--ease);
+}
+.nav-links a:not(.nav-cta)::after {
+  content: '';
+  position: absolute;
+  bottom: 2px; left: 0; right: 0;
+  height: 1px;
+  background: var(--coral);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform .25s var(--ease);
+}
+.nav-links a:hover { color: var(--ink) }
+.nav-links a:hover::after { transform: scaleX(1); transform-origin: left }
+.nav-links a.is-active { color: var(--coral-dark) }
+.nav-links a.is-active::after { transform: scaleX(1); background: var(--coral-dark) }
+.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 26px;
+  border-radius: 999px;
+  background: var(--coral);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  line-height: 1.2;
+  transition: background .18s var(--ease), transform .18s var(--ease), box-shadow .18s var(--ease);
+}
+.nav-cta:hover { background: var(--coral-dark); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(217,107,79,.2) }
+
+/* burger */
+.burger {
+  display: none;
+  margin-left: auto;
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+}
+.burger span {
+  display: block; width: 18px; height: 1.5px;
+  background: var(--ink); position: relative;
+}
+.burger span::before, .burger span::after {
+  content: ""; position: absolute; left: 0;
+  width: 18px; height: 1.5px; background: var(--ink);
+}
+.burger span::before { top: -5px }
+.burger span::after { top: 5px }
+
+@media (max-width: 880px) {
+  .nav-links { display: none }
+  .burger {
+    display: inline-flex;
+    margin-left: auto;
+    position: relative;
+    z-index: 1002;
+  }
+  .burger span,
+  .burger span::before,
+  .burger span::after {
+    transition: transform .22s var(--ease), top .22s var(--ease), background .22s var(--ease);
+  }
+  .burger[aria-expanded="true"] span { background: transparent }
+  .burger[aria-expanded="true"] span::before { top: 0; transform: rotate(45deg) }
+  .burger[aria-expanded="true"] span::after { top: 0; transform: rotate(-45deg) }
+}
+
+/* ═══ MOBILE MENU — fully isolated overlay ═══ */
+.mobile-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0 var(--gutter);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: opacity .3s var(--ease), transform .3s var(--ease), visibility 0s .3s;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.mobile-menu-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity .3s var(--ease), transform .3s var(--ease), visibility 0s 0s;
+}
+/* ── top row: brand + close X ── */
+.mobile-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.mobile-menu-brand {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.mobile-menu-brand .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--coral);
+}
+.mobile-menu-close {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  transition: background .18s var(--ease);
+}
+.mobile-menu-close:hover { background: var(--paper-2) }
+.mobile-menu-close svg { width: 16px; height: 16px }
+/* ── nav links ── */
+.mobile-menu-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0 0;
+  flex: 1;
+  justify-content: center;
+  max-height: 420px;
+}
+.mobile-menu-nav a {
+  display: block;
+  font-family: var(--serif);
+  font-size: clamp(20px, 4.8vw, 28px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+  transition: color .18s var(--ease);
+}
+.mobile-menu-nav a:first-child { border-top: 1px solid var(--line) }
+.mobile-menu-nav a:hover { color: var(--coral-dark) }
+/* ── CTA ── */
+.mobile-menu-cta {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 0;
+  flex-shrink: 0;
+}
+.mobile-menu-cta a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 12px 24px;
+  border-radius: 999px;
+  background: var(--coral);
+  color: #fff;
+  border: 0;
+  letter-spacing: 0;
+  text-decoration: none;
+  transition: background .18s var(--ease);
+  width: 100%;
+}
+.mobile-menu-cta a:hover { background: var(--coral-dark) }
+/* ── footer meta ── */
+.mobile-menu-foot {
+  margin-top: auto;
+  padding: 12px 0 env(safe-area-inset-bottom, 12px);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: .5;
+  text-align: center;
+  flex-shrink: 0;
+}
+@media (min-width: 881px) {
+  .mobile-menu-overlay { display: none !important }
+}
+/* body scroll lock when menu is open */
+body.menu-open {
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: normal;
+  white-space: nowrap;
+  transition: background .18s var(--ease), color .18s var(--ease),
+              border-color .18s var(--ease), transform .18s var(--ease);
+}
+.btn-primary { background: var(--coral); color: #fff }
+.btn-primary:hover { background: var(--coral-dark); transform: translateY(-1px) }
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+}
+.btn-ghost:hover { background: var(--paper-2); border-color: var(--ink) }
+.btn-soft {
+  background: rgba(217,107,79,.10);
+  color: var(--coral-dark);
+  border: 1px solid rgba(217,107,79,.30);
+}
+.btn-soft:hover {
+  background: rgba(217,107,79,.16);
+  border-color: rgba(217,107,79,.50);
+  transform: translateY(-1px);
+}
+.btn-dark { background: var(--ink); color: var(--paper) }
+.btn-dark:hover { background: var(--night) }
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--coral-dark);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: border-color .18s var(--ease);
+}
+.link:hover { border-color: var(--coral-dark) }
+.link .arr { transition: transform .2s var(--ease) }
+.link:hover .arr { transform: translateX(3px) }
+
+/* ═══════════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════════ */
+.hero {
+  padding: clamp(48px, 8vw, 140px) 0 clamp(36px, 5vw, 72px);
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 52fr 48fr;
+  gap: clamp(32px, 4vw, 56px);
+  align-items: center;
+}
+@media (max-width: 960px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 24px }
+}
+@media (max-width: 480px) {
+  .hero-grid { gap: 16px }
+  .hero-top { gap: 16px }
+  .hero-cta { padding-top: 4px }
+}
+.hero-top {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+.hero-label {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(36px, 7vw, 88px);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  margin: 0;
+  text-wrap: balance;
+}
+.hero h1 em {
+  color: var(--coral-dark);
+  font-style: italic;
+  font-weight: 500;
+}
+.hero-dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--coral);
+  vertical-align: baseline;
+  margin-left: 4px;
+  position: relative;
+  top: -2px;
+}
+.hero-lead {
+  font-size: clamp(16px, 1.2vw, 18px);
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 620px;
+  margin: 0;
+  letter-spacing: 0;
+}
+.hero-cta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding-top: 8px;
+}
+.hero-proof {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  padding-top: 18px;
+  align-items: center;
+}
+/* proof ring badges */
+.proof-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.proof-ring {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--coral);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--coral-dark);
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+.proof-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.proof-label strong {
+  display: block;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+/* proof text chips (non-ring) */
+.proof-chip {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 12px;
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .hero-proof { padding-top: 8px; gap: 8px 12px }
+  .proof-badge { gap: 7px }
+  .proof-ring { width: 32px; height: 32px; font-size: 13px; border-width: 1.2px }
+  .proof-label { font-size: 8.5px }
+  .proof-chip { font-size: 8.5px; padding: 3px 8px }
+}
+
+/* hero visual plate — editorial artifact */
+.hero-plate {
+  position: relative;
+  min-width: 0;
+}
+@media (min-width: 961px) {
+  .hero-plate {
+    margin-right: calc(var(--gutter) * -0.5);
+  }
+}
+@media (max-width: 960px) {
+  .hero-plate { margin-top: 8px }
+}
+.plate-frame {
+  position: relative;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper-soft);
+  padding: clamp(20px, 2.5vw, 36px);
+  transition: border-color .3s var(--ease), box-shadow .3s var(--ease);
+}
+.plate-frame:hover {
+  border-color: rgba(217,107,79,.35);
+  box-shadow: 0 8px 32px -8px rgba(217,107,79,.10);
+}
+/* 4 corner marks */
+.plate-corner {
+  position: absolute;
+  width: 20px; height: 20px;
+  border-color: var(--muted);
+  border-style: solid;
+  opacity: .45;
+  pointer-events: none;
+  z-index: 2;
+}
+.plate-corner--tl { top: 8px; left: 8px; border-width: 1px 0 0 1px }
+.plate-corner--tr { top: 8px; right: 8px; border-width: 1px 1px 0 0 }
+.plate-corner--bl { bottom: 8px; left: 8px; border-width: 0 0 1px 1px }
+.plate-corner--br { bottom: 8px; right: 8px; border-width: 0 1px 1px 0 }
+/* 4 annotations */
+.plate-anno {
+  position: absolute;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: .55;
+  pointer-events: none;
+  z-index: 2;
+  white-space: nowrap;
+}
+.plate-anno--tl { top: 12px; left: 36px }
+.plate-anno--tr { top: 12px; right: 36px; text-align: right }
+.plate-anno--bl { bottom: 12px; left: 36px }
+.plate-anno--br { bottom: 12px; right: 36px; text-align: right }
+/* index strip below plate */
+.plate-index {
+  display: flex;
+  gap: 0;
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.plate-index-item {
+  flex: 1;
+  padding: 8px 12px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-right: 1px solid var(--line);
+  white-space: nowrap;
+  text-align: center;
+  background: var(--paper-soft);
+  transition: background .18s var(--ease), color .18s var(--ease);
+}
+.plate-index-item:last-child { border-right: 0 }
+.plate-index-item:hover { background: var(--paper-2); color: var(--ink-2) }
+@media (max-width: 480px) {
+  .plate-index-item { font-size: 8.5px; padding: 7px 6px }
+}
+
+/* collage grid */
+.collage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 16px;
+}
+.collage-item {
+  position: relative;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: zoom-in;
+  transition: transform .25s var(--ease), border-color .25s var(--ease),
+              box-shadow .25s var(--ease);
+}
+.collage-item:hover {
+  transform: translateY(-3px);
+  border-color: var(--coral);
+  box-shadow: 0 12px 32px -12px rgba(217,107,79,.20);
+}
+.collage-item:first-child {
+  grid-row: 1 / 3;
+}
+.collage-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top left;
+  display: block;
+}
+.collage-item:first-child img { object-position: top center }
+.collage-tag {
+  position: absolute;
+  top: 10px; left: 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-soft);
+  background: rgba(23,21,19,.62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 4px 10px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  /* ── Mobile hero archive: fan-stacked proof deck ──
+     Wider, centered, clearer layering. Front card dominates,
+     back cards peek left/right with visible screenshot + label. */
+  .plate-frame { padding: 14px 10px 14px }
+  .plate-anno { display: none }
+  .plate-corner { width: 14px; height: 14px }
+  .collage {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    gap: 0;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    max-height: 200px;
+    margin: 0 auto;
+  }
+  .collage-item {
+    grid-area: 1 / 1;
+    position: relative;
+    min-height: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    aspect-ratio: auto;
+    height: 86%;
+    align-self: center;
+    transition: transform .4s var(--ease), box-shadow .4s var(--ease);
+  }
+  .collage-item:first-child { grid-row: 1 }
+
+  /* ── Card 1 (NeuroFox AI) — back LEFT ── */
+  .collage-item:nth-child(1) {
+    width: 52%;
+    justify-self: start;
+    z-index: 1;
+    transform: rotate(-5deg) translateX(-6%);
+    box-shadow: 0 4px 14px -2px rgba(23,21,19,.20);
+    opacity: .78;
+  }
+  /* ── Card 2 (Pegas CRM) — back RIGHT ── */
+  .collage-item:nth-child(2) {
+    width: 52%;
+    justify-self: end;
+    z-index: 2;
+    transform: rotate(5deg) translateX(6%);
+    box-shadow: 0 4px 14px -2px rgba(23,21,19,.20);
+    opacity: .78;
+  }
+  /* ── Card 3 (Telegram Bot) — FRONT CENTER ── */
+  .collage-item:nth-child(3) {
+    width: 48%;
+    justify-self: center;
+    z-index: 3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px -4px rgba(23,21,19,.30);
+    opacity: 1;
+  }
+
+  .collage-item img {
+    object-fit: cover;
+    object-position: top center;
+    height: 100%;
+    width: 100%;
+    border-radius: 5px;
+  }
+  .collage-tag {
+    top: 5px; left: 5px;
+    font-size: 7.5px;
+    padding: 2px 6px;
+    letter-spacing: 0.04em;
+  }
+  .plate-index {
+    margin-top: 8px;
+  }
+  .plate-index-item {
+    font-size: 8px;
+    padding: 5px 4px;
+  }
+}
+/* Mobile hero refinements — small screens */
+@media (max-width: 480px) {
+  .hero h1 { font-size: clamp(30px, 8vw, 40px); letter-spacing: -0.02em }
+  .hero-lead { font-size: 15px }
+  .hero-cta .btn { width: 100%; justify-content: center; white-space: normal; text-align: center }
+  .hero-proof { font-size: 10px; gap: 8px 12px; padding-top: 8px }
+  .plate-frame { padding: 12px 10px 12px }
+  .plate-index { display: none }
+  .hero-dot { width: 8px; height: 8px }
+  .collage { max-height: 170px }
+  .collage-item:nth-child(1) { width: 50%; transform: rotate(-5deg) translateX(-8%) }
+  .collage-item:nth-child(2) { width: 50%; transform: rotate(5deg) translateX(8%) }
+  .collage-item:nth-child(3) { width: 46% }
+}
+
+/* ═══════════════════════════════════════════════
+   MARQUEE STRIP
+   ═══════════════════════════════════════════════ */
+.marquee-wrap {
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+  overflow: hidden;
+  padding: 14px 0;
+  background: var(--paper);
+  position: relative;
+}
+.marquee-label {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px 0 var(--gutter);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  background: var(--paper);
+  z-index: 2;
+  white-space: nowrap;
+  border-right: 1px solid var(--line);
+}
+@media (max-width: 640px) {
+  .marquee-label { display: none }
+}
+.marquee-track {
+  display: flex;
+  gap: 0;
+  width: max-content;
+  animation: marqueeScroll 40s linear infinite;
+  will-change: transform;
+}
+@keyframes marqueeScroll {
+  to { transform: translateX(-50%) }
+}
+.marquee-item {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.marquee-item::after {
+  content: "·";
+  color: var(--coral);
+  font-weight: 600;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none }
+}
+
+/* ═══════════════════════════════════════════════
+   ABOUT
+   ═══════════════════════════════════════════════ */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(40px, 6vw, 80px);
+  align-items: start;
+}
+@media (max-width: 768px) { .about-grid { grid-template-columns: 1fr } }
+.about-text {
+  font-size: 17px;
+  color: var(--ink-2);
+  line-height: 1.65;
+  max-width: 560px;
+}
+.about-text p { margin: 0 0 20px }
+.about-points {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+.about-points li {
+  padding: 18px 0 18px 0;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  align-items: start;
+  font-size: 15px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+.about-points .pt-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--coral-dark);
+  letter-spacing: 0.06em;
+  padding-top: 3px;
+}
+
+/* ═══════════════════════════════════════════════
+   CAPABILITIES
+   ═══════════════════════════════════════════════ */
+.caps-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+@media (max-width: 680px) { .caps-grid { grid-template-columns: 1fr } }
+.cap {
+  padding: clamp(28px, 3.5vw, 40px);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--paper-soft);
+  position: relative;
+  transition: background .22s var(--ease), box-shadow .22s var(--ease), transform .22s var(--ease);
+}
+.cap:nth-child(2n) { border-right: 0 }
+.cap:nth-last-child(-n+2) { border-bottom: 0 }
+/* hover effects only for fine pointer (mouse) — prevents sticky hover on touch */
+@media (hover: hover) and (pointer: fine) {
+  .cap:hover {
+    background: #fff;
+    box-shadow: 0 4px 20px rgba(23,21,19,.06);
+    transform: translateY(-2px);
+  }
+  .cap:hover .cap-num::after {
+    max-width: 64px;
+    background: var(--coral);
+  }
+  .cap:hover .cap-arrow {
+    border-color: var(--coral);
+    color: var(--coral);
+    transform: translate(2px, -1px);
+    background: rgba(217,107,79,.06);
+  }
+}
+@media (max-width: 680px) {
+  .cap { border-right: 0; padding: clamp(22px, 3vw, 32px); gap: 10px }
+  .cap p { line-height: 1.5 }
+  .cap:nth-last-child(-n+2) { border-bottom: 1px solid var(--line) }
+  .cap:last-child { border-bottom: 0 }
+  .cap-arrow { display: none !important }
+}
+/* ── number ── */
+.cap-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--coral-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cap-num::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+  max-width: 48px;
+  transition: max-width .3s var(--ease), background .2s var(--ease);
+}
+/* ── title ── */
+.cap h3 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(22px, 2.5vw, 28px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+/* ── desc ── */
+.cap p {
+  font-size: 15px;
+  color: var(--ink-2);
+  line-height: 1.55;
+  margin: 0;
+}
+/* ── arrow mark ── */
+.cap-arrow {
+  margin-top: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: border-color .2s var(--ease), color .2s var(--ease), transform .2s var(--ease), background .2s var(--ease);
+  flex-shrink: 0;
+}
+.cap-arrow svg { width: 12px; height: 12px }
+
+/* ═══════════════════════════════════════════════
+   CASES — full-width visual plates
+   ═══════════════════════════════════════════════ */
+.cases-list { display: grid; gap: clamp(32px, 5vw, 56px) }
+.case-plate {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--paper-soft);
+  transition: border-color .25s var(--ease);
+}
+.case-plate:hover { border-color: var(--coral) }
+
+.case-visual {
+  position: relative;
+  background: var(--paper-2);
+  min-height: clamp(240px, 36vw, 480px);
+  overflow: hidden;
+  cursor: zoom-in;
+}
+.case-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  transition: transform .4s var(--ease);
+}
+/* hover zoom — overridden per-case on mobile */
+
+/* corner marks on visual */
+.case-visual::before, .case-visual::after {
+  content: "";
+  position: absolute;
+  width: 16px; height: 16px;
+  border-color: rgba(255,255,255,.5);
+  border-style: solid;
+  z-index: 2;
+  pointer-events: none;
+}
+.case-visual::before { top: 12px; left: 12px; border-width: 1px 0 0 1px }
+.case-visual::after { bottom: 12px; right: 12px; border-width: 0 1px 1px 0 }
+
+.case-zoom-hint {
+  position: absolute;
+  bottom: 8px; right: 8px;
+  background: rgba(23,21,19,.45);
+  color: rgba(246,240,223,.75);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .22s var(--ease);
+}
+.case-zoom-hint svg { width: 10px; height: 10px }
+.case-plate:hover .case-zoom-hint { opacity: .85 }
+
+.case-body {
+  padding: clamp(24px, 3.5vw, 40px);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px 40px;
+  align-items: start;
+}
+@media (max-width: 680px) {
+  .case-body { grid-template-columns: 1fr }
+}
+.case-info { display: flex; flex-direction: column; gap: 12px }
+.case-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--coral-dark);
+}
+.case-info h3 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(26px, 3.2vw, 36px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+.case-kind {
+  font-size: 14px;
+  color: var(--muted);
+}
+.case-desc {
+  font-size: 15.5px;
+  color: var(--ink-2);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 560px;
+}
+.case-note {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+}
+.case-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-self: center;
+}
+.case-actions .btn { font-size: 14px; padding: 11px 20px; white-space: nowrap }
+@media (max-width: 680px) {
+  .case-actions { flex-direction: row; flex-wrap: wrap }
+}
+
+/* ═══════════════════════════════════════════════
+   CASES — desktop polish
+   ═══════════════════════════════════════════════ */
+/* bolder visual on desktop: taller min-height, more confident image fill */
+@media (min-width: 769px) {
+  .case-visual { min-height: clamp(300px, 40vw, 520px) }
+  .case-plate:hover { box-shadow: 0 12px 40px -12px rgba(217,107,79,.12) }
+  .case-plate:hover .case-visual img { transform: scale(1.025) }
+}
+
+/* ═══════════════════════════════════════════════
+   CASES — proof chips (visible on all sizes)
+   ═══════════════════════════════════════════════ */
+.case-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.case-chip {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+/* ═══════════════════════════════════════════════
+   CASES — mobile artifact cards (≤600px)
+   No aggressive scale/crop. Show screenshots naturally 
+   inside premium card frames, like the hero collage items.
+   ═══════════════════════════════════════════════ */
+
+/* case label overlay — visible on mobile only */
+.case-visual-label {
+  display: none;
+}
+@media (max-width: 600px) {
+  .case-visual-label {
+    display: block;
+    position: absolute;
+    top: 10px; left: 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--paper-soft);
+    background: rgba(23,21,19,.62);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 4px 10px;
+    border-radius: 999px;
+    z-index: 3;
+    pointer-events: none;
+  }
+}
+
+@media (max-width: 600px) {
+  /* visual container: clean card, no aggressive transforms */
+  .case-visual {
+    min-height: 0;
+    max-height: none;
+    background: var(--paper-2);
+    border-bottom: 1px solid var(--line);
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .case-visual img {
+    width: 100%;
+    height: auto;
+    max-height: 320px;
+    object-fit: contain;
+    object-position: top center;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+
+  /* corner marks: smaller, positioned relative to padded area */
+  .case-visual::before, .case-visual::after {
+    width: 10px; height: 10px;
+  }
+  .case-visual::before { top: 6px; left: 6px }
+  .case-visual::after { bottom: 6px; right: 6px }
+
+  /* zoom hint: tiny, always-visible on mobile since no hover */
+  .case-zoom-hint {
+    bottom: auto; top: 8px; right: 8px;
+    padding: 2px 6px;
+    font-size: 0;
+    opacity: .45;
+    background: rgba(23,21,19,.40);
+    gap: 0;
+    width: 22px; height: 22px;
+    justify-content: center;
+  }
+  .case-zoom-hint svg { width: 11px; height: 11px }
+  .case-plate:hover .case-zoom-hint { opacity: .6 }
+
+  /* ── NeuroFox AI ──
+     Dark interface: dark card bg, moderate zoom to show 
+     the app header/form area more clearly. */
+  [data-case="neurofox-ai"] .case-visual {
+    background: #232323;
+    padding: 8px;
+  }
+  [data-case="neurofox-ai"] .case-visual img {
+    border-color: rgba(255,255,255,.06);
+    max-height: 300px;
+    object-fit: cover;
+    object-position: top center;
+    transform: scale(1.18);
+    transform-origin: 50% 8%;
+    filter: brightness(1.12) contrast(1.05);
+  }
+  [data-case="neurofox-ai"] .case-visual::before,
+  [data-case="neurofox-ai"] .case-visual::after {
+    border-color: rgba(255,255,255,.25);
+  }
+  [data-case="neurofox-ai"] .case-visual-label {
+    color: rgba(255,255,255,.85);
+    background: rgba(0,0,0,.5);
+  }
+
+  /* ── Pegas CRM ──
+     Light desktop table — show naturally in light card.
+     object-fit: contain shows the full table at readable size. */
+  [data-case="pegas-crm"] .case-visual {
+    background: #f4f3f0;
+    padding: 12px;
+  }
+  [data-case="pegas-crm"] .case-visual img {
+    max-height: 280px;
+    object-position: center top;
+    border-color: rgba(0,0,0,.08);
+  }
+
+  /* ── Telegram Bot ──
+     Already good with phones. Slightly taller allowance. */
+  [data-case="telegram-bot"] .case-visual {
+    padding: 12px;
+  }
+  [data-case="telegram-bot"] .case-visual img {
+    max-height: 360px;
+    object-position: center top;
+  }
+
+  /* case body tighter */
+  .case-body {
+    padding: 18px 16px 20px;
+    gap: 14px 20px;
+  }
+  .case-info h3 { font-size: clamp(22px, 5.5vw, 28px) }
+  .case-desc { font-size: 14.5px }
+  .case-actions .btn { font-size: 13.5px; padding: 10px 16px }
+
+  /* chips slightly smaller on mobile */
+  .case-chip { font-size: 9.5px; padding: 3px 8px }
+}
+
+/* ═══════════════════════════════════════════════
+   TOPBAR — mobile compact
+   ═══════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .topbar-center { display: none }
+  .topbar-right { display: none }
+}
+@media (max-width: 480px) {
+  .topbar {
+    font-size: 9px;
+    padding: 5px 0;
+  }
+  .topbar-left { font-size: 9px }
+  .topbar-inner { justify-content: center }
+}
+
+/* ═══════════════════════════════════════════════
+   METHOD — dark editorial room
+   ═══════════════════════════════════════════════ */
+.method-section {
+  background: var(--night);
+  color: #efe7d9;
+  padding: clamp(64px, 8vw, 110px) 0;
+  border-top: 1px solid rgba(239,231,210,.10);
+  position: relative;
+}
+.method-section .section-head { margin-bottom: clamp(40px, 5vw, 64px) }
+.method-section .eyebrow { color: rgba(239,231,210,.40) }
+.method-section .section-head h2 { color: #fbf7ef }
+.method-section .section-head .lede { color: rgba(239,231,210,.65) }
+.method-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid rgba(239,231,210,.12);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+@media (max-width: 980px) {
+  .method-grid { grid-template-columns: repeat(2, 1fr) }
+}
+@media (max-width: 560px) {
+  .method-grid { grid-template-columns: 1fr }
+}
+.method-step {
+  padding: clamp(24px, 3vw, 36px);
+  border-right: 1px solid rgba(239,231,210,.10);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--night-2);
+  transition: background .2s var(--ease);
+}
+.method-step:hover { background: rgba(239,231,210,.04) }
+.method-step:last-child { border-right: 0 }
+@media (max-width: 980px) {
+  .method-step { border-bottom: 1px solid rgba(239,231,210,.10) }
+  .method-step:nth-child(2n) { border-right: 0 }
+  .method-step:nth-last-child(-n+2) { border-bottom: 0 }
+}
+@media (max-width: 560px) {
+  .method-section { padding: clamp(40px, 7vw, 64px) 0 }
+  .method-section .section-head { margin-bottom: clamp(28px, 4vw, 40px) }
+  .method-step { border-right: 0; border-bottom: 1px solid rgba(239,231,210,.14); padding: 20px 18px }
+  .method-step:last-child { border-bottom: 0 }
+  .method-step h4 { font-size: 19px }
+  .method-step p { font-size: 13.5px; color: rgba(239,231,210,.75) }
+  .method-foot { margin-top: 20px; padding-top: 16px; gap: 12px 20px }
+  .method-foot-text { font-size: 14px }
+}
+.method-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--coral);
+}
+.method-step h4 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.15;
+  margin: 0;
+  letter-spacing: -0.01em;
+  color: #fbf7ef;
+}
+.method-step p {
+  font-size: 14.5px;
+  color: rgba(239,231,210,.72);
+  margin: 0;
+  line-height: 1.55;
+}
+/* method footer */
+.method-foot {
+  margin-top: clamp(28px, 4vw, 44px);
+  padding-top: clamp(20px, 3vw, 28px);
+  border-top: 1px solid rgba(239,231,210,.10);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px 28px;
+}
+.method-foot-text {
+  font-size: 15px;
+  color: rgba(239,231,210,.55);
+  max-width: 560px;
+  line-height: 1.5;
+}
+.method-foot .link {
+  color: var(--coral);
+  border-bottom-color: transparent;
+}
+.method-foot .link:hover { border-bottom-color: var(--coral) }
+.method-foot .link .arr { color: var(--coral) }
+
+/* ═══════════════════════════════════════════════
+   FORMATS + FAQ combined compact
+   ═══════════════════════════════════════════════ */
+.formats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: clamp(48px, 6vw, 72px);
+}
+@media (max-width: 768px) { .formats-row { grid-template-columns: 1fr } }
+.fmt {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: clamp(24px, 3vw, 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: background .2s var(--ease), border-color .2s var(--ease);
+}
+.fmt:hover { background: var(--paper); border-color: var(--line-strong) }
+.fmt.is-rec {
+  position: relative;
+  border-color: var(--coral);
+  background: linear-gradient(180deg, rgba(217,107,79,.06), var(--paper-soft) 60%);
+}
+.fmt.is-rec::after {
+  content: "Часто";
+  position: absolute; top: -10px; left: 20px;
+  background: var(--coral); color: #fff;
+  padding: 3px 10px; border-radius: 999px;
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.fmt-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.fmt h4 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 22px;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.fmt p {
+  font-size: 14.5px;
+  color: var(--ink-2);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* FAQ */
+.faq { display: grid; gap: 0; border-top: 1px solid var(--line) }
+.faq details { border-bottom: 1px solid var(--line); padding: 20px 0 }
+.faq summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  font-family: var(--serif);
+  font-size: clamp(17px, 2vw, 21px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.faq summary::-webkit-details-marker { display: none }
+.faq summary::after {
+  content: "+";
+  font-family: var(--mono);
+  font-weight: 400;
+  font-size: 20px;
+  width: 30px; height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform .22s var(--ease), background .22s var(--ease), color .22s var(--ease);
+}
+.faq details[open] summary::after {
+  content: "\2013";
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.faq-body {
+  margin-top: 12px;
+  font-size: 15px;
+  color: var(--ink-2);
+  line-height: 1.6;
+  max-width: 700px;
+}
+
+/* ═══════════════════════════════════════════════
+   FINAL CTA — dark espresso
+   ═══════════════════════════════════════════════ */
+.cta-final {
+  background: var(--night);
+  color: #efe7d9;
+  padding: clamp(72px, 9vw, 128px) 0;
+  position: relative;
+  overflow: hidden;
+}
+.cta-final::before {
+  content: "";
+  position: absolute; inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 4px 4px;
+  pointer-events: none;
+}
+.cta-final .wrap { position: relative }
+.cta-final .eyebrow { color: rgba(239,231,210,.45) }
+.cta-final h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  margin: 16px 0 22px;
+  color: #fbf7ef;
+  max-width: 880px;
+  text-wrap: balance;
+}
+.cta-final p {
+  font-size: 17px;
+  color: rgba(239,231,210,.72);
+  max-width: 640px;
+  margin: 0 0 32px;
+  line-height: 1.6;
+}
+.cta-final .btn-primary { background: var(--coral) }
+.cta-final .btn-primary:hover { background: #c95a3c }
+.cta-final .btn-ghost {
+  color: #fbf7ef;
+  border-color: rgba(239,231,210,.22);
+}
+.cta-final .btn-ghost:hover {
+  background: rgba(255,255,255,.06);
+  border-color: #fbf7ef;
+}
+.cta-final .small {
+  margin-top: 28px;
+  font-size: 14px;
+  color: rgba(239,231,210,.55);
+  max-width: 620px;
+  line-height: 1.55;
+  border-top: 1px solid rgba(239,231,210,.12);
+  padding-top: 18px;
+}
+
+/* ═══════════════════════════════════════════════
+   FOOTER — enhanced
+   ═══════════════════════════════════════════════ */
+.footer {
+  padding: 40px 0 32px;
+  border-top: 1px solid var(--line);
+}
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.footer-nav a {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color .18s var(--ease);
+  padding: 4px 0;
+}
+.footer-nav a:hover { color: var(--coral-dark) }
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px 20px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--muted);
+}
+.footer-tagline {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: .65;
+  margin-top: 16px;
+}
+.footer-links {
+  display: flex;
+  gap: 20px;
+}
+.footer-links a {
+  color: var(--ink-2);
+  transition: color .18s var(--ease);
+}
+.footer-links a:hover { color: var(--coral-dark) }
+@media (max-width: 480px) {
+  .footer-nav { gap: 4px 14px }
+  .footer-nav a { font-size: 10px }
+  .footer-tagline { font-size: 9px }
+}
+
+/* ═══════════════════════════════════════════════
+   REVEAL + PARALLAX
+   ═══════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .6s var(--ease), transform .6s var(--ease);
+}
+.reveal.is-in { opacity: 1; transform: none }
+.reveal.d1 { transition-delay: 100ms }
+.reveal.d2 { transition-delay: 200ms }
+.reveal.d3 { transition-delay: 300ms }
+.reveal.d4 { transition-delay: 400ms }
+.reveal.d5 { transition-delay: 500ms }
+
+/* plate scale-in — different reveal variant */
+.reveal-plate {
+  opacity: 0;
+  transform: scale(.96) translateY(12px);
+  transition: opacity .7s var(--ease), transform .7s var(--ease);
+  transition-delay: 250ms;
+}
+.reveal-plate.is-in { opacity: 1; transform: none }
+
+/* stagger children in grids */
+.caps-grid .cap.reveal:nth-child(1) { transition-delay: 0ms }
+.caps-grid .cap.reveal:nth-child(2) { transition-delay: 120ms }
+.caps-grid .cap.reveal:nth-child(3) { transition-delay: 240ms }
+.caps-grid .cap.reveal:nth-child(4) { transition-delay: 360ms }
+.method-grid .method-step { transition: background .2s var(--ease), opacity .5s var(--ease), transform .5s var(--ease) }
+.method-grid.reveal.is-in .method-step:nth-child(1) { opacity: 1; transform: none; transition-delay: 0ms }
+.method-grid.reveal.is-in .method-step:nth-child(2) { opacity: 1; transform: none; transition-delay: 100ms }
+.method-grid.reveal.is-in .method-step:nth-child(3) { opacity: 1; transform: none; transition-delay: 200ms }
+.method-grid.reveal.is-in .method-step:nth-child(4) { opacity: 1; transform: none; transition-delay: 300ms }
+
+/* collage items stagger inside plate — desktop only.
+   On mobile the fan transforms must not be overridden by animation. */
+@media (min-width: 641px) {
+  .reveal-plate .collage-item { opacity: 0 }
+  .reveal-plate.is-in .collage-item { animation: collageIn .5s var(--ease) both }
+  .reveal-plate.is-in .collage-item:nth-child(1) { animation-delay: 350ms }
+  .reveal-plate.is-in .collage-item:nth-child(2) { animation-delay: 450ms }
+  .reveal-plate.is-in .collage-item:nth-child(3) { animation-delay: 550ms }
+  @keyframes collageIn {
+    from { opacity: 0; transform: translateY(8px) scale(.98) }
+    to { opacity: 1; transform: none }
+  }
+}
+/* mobile: fade-only reveal (keeps fan transforms intact) */
+@media (max-width: 640px) {
+  .reveal-plate .collage-item { opacity: 0; transition: opacity .5s var(--ease) }
+  .reveal-plate.is-in .collage-item:nth-child(1) { opacity: .78; transition-delay: 180ms }
+  .reveal-plate.is-in .collage-item:nth-child(2) { opacity: .78; transition-delay: 280ms }
+  .reveal-plate.is-in .collage-item:nth-child(3) { opacity: 1; transition-delay: 400ms }
+}
+
+/* case plates stagger */
+.cases-list .case-plate.reveal:nth-child(1) { transition-delay: 0ms }
+.cases-list .case-plate.reveal:nth-child(2) { transition-delay: 140ms }
+.cases-list .case-plate.reveal:nth-child(3) { transition-delay: 280ms }
+
+/* case visual tap feedback on mobile */
+@media (max-width: 600px) {
+  .case-visual:active img {
+    transform: scale(.98);
+    transition-duration: .12s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-plate { opacity: 1; transform: none; transition: none }
+  .reveal-plate .collage-item, .reveal-plate.is-in .collage-item { opacity: 1; animation: none; transition: none }
+  .marquee-track { animation: none }
+  .topbar-status { animation: none }
+  .progress { display: none }
+  .header { transition: none }
+  .collage-item { transition: none !important }
+  .case-visual img { transition: none !important }
+  .cap { transition: none !important }
+  .cap-num::after { transition: none !important }
+  .cap-arrow { transition: none !important }
+  .nav-cta { transition: none !important }
+  .nav-links { transition: none !important }
+  .mobile-menu-overlay { transition: none !important }
+  .lightbox { transition: none !important }
+  .lightbox-card { transition: none !important }
+  .burger span, .burger span::before, .burger span::after { transition: none !important }
+}
+
+/* ═══════════════════════════════════════════════
+   LIGHTBOX — image-first, card wraps content
+   ═══════════════════════════════════════════════ */
+.lightbox {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(23,21,19,.90);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .26s var(--ease);
+  padding: 16px;
+  cursor: zoom-out;
+}
+.lightbox.is-open { opacity: 1; pointer-events: auto }
+.lightbox-card {
+  position: relative;
+  display: inline-flex;
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 24px 64px -16px rgba(23,21,19,.50);
+  transform: scale(.92) translateY(16px);
+  transition: transform .3s var(--ease), background .3s var(--ease);
+  cursor: default;
+  max-width: 96vw;
+  max-height: 92vh;
+}
+.lightbox.is-open .lightbox-card {
+  transform: none;
+}
+/* dark variant for dark screenshots (NeuroFox AI) */
+.lightbox-card.is-dark {
+  background: #111;
+  border-color: rgba(255,255,255,.06);
+}
+.lightbox-card.is-dark .lightbox-close {
+  background: rgba(255,255,255,.15);
+  color: #fff;
+}
+.lightbox-card.is-dark .lightbox-close:hover { background: rgba(255,255,255,.30) }
+.lightbox-card img {
+  display: block;
+  max-width: min(94vw, 1200px);
+  max-height: 86vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+.lightbox-close {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(23,21,19,.65);
+  color: #fbf7ef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  z-index: 1;
+  transition: background .18s var(--ease), transform .18s var(--ease);
+  cursor: pointer;
+}
+.lightbox-close:hover { background: rgba(23,21,19,.92); transform: scale(1.08) }
+@media (max-width: 600px) {
+  .lightbox {
+    padding: 12px;
+    align-items: center;
+    justify-content: center;
+  }
+  .lightbox-card {
+    display: inline-flex;
+    border-radius: 6px;
+    padding: 0;
+    max-width: 94vw;
+    max-height: none;
+    overflow: hidden;
+    background: var(--paper-soft);
+  }
+  .lightbox-card img {
+    max-width: 94vw;
+    max-height: 76vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 6px;
+    display: block;
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 30px; height: 30px;
+    font-size: 14px;
+    z-index: 5;
+    background: rgba(23,21,19,.72);
+    border-radius: 50%;
+    color: #fbf7ef;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  /* dark variant: tight card, dark bg, no extra whitespace */
+  .lightbox-card.is-dark {
+    background: #111;
+    border-color: rgba(255,255,255,.06);
+    padding: 0;
+  }
+  .lightbox-card.is-dark img {
+    max-width: 94vw;
+    max-height: 76vh;
+    border-radius: 4px;
+  }
+  .lightbox-card.is-dark .lightbox-close {
+    background: rgba(255,255,255,.18);
+    color: #fff;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- ═══════════════ SIDE RAILS (desktop only) ═══════════════ -->
+<div class="side-rail side-rail--left" aria-hidden="true">qXstay · Прикладная автоматизация · 2026</div>
+<div class="side-rail side-rail--right" aria-hidden="true">Telegram · AI · CRM · Платежи · Поддержка</div>
+
+<!-- ═══════════════ TOPBAR ═══════════════ -->
+<div class="topbar" aria-hidden="true">
+  <div class="wrap">
+    <div class="topbar-inner">
+      <div class="topbar-left">qXstay <span class="topbar-sep">/</span> 2026 · Прикладная автоматизация</div>
+      <div class="topbar-center">Telegram · AI · CRM · Платежи</div>
+      <div class="topbar-right"><span class="topbar-status" aria-hidden="true"></span> Принимаю проекты</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header class="header" id="header">
+  <div class="wrap">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="#top"><span class="dot" aria-hidden="true"></span>qXstay</a>
+      <button class="burger" id="burger" aria-label="Меню" aria-expanded="false"><span></span></button>
+      <div class="nav-links" id="navLinks">
+        <a href="#about">Подход</a>
+        <a href="#capabilities">Решения</a>
+        <a href="#cases">Кейсы</a>
+        <a href="#method">Процесс</a>
+        <a href="#faq">FAQ</a>
+        <a class="nav-cta" href="#contact">Разобрать задачу</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══════════════ MOBILE MENU OVERLAY (isolated) ═══════════════ -->
+<div class="mobile-menu-overlay" id="mobileMenu" role="dialog" aria-label="Навигация" aria-modal="true">
+  <div class="mobile-menu-header">
+    <span class="mobile-menu-brand"><span class="dot" aria-hidden="true"></span>qXstay</span>
+    <button class="mobile-menu-close" id="menuClose" aria-label="Закрыть меню">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <nav class="mobile-menu-nav">
+    <a href="#about">Подход</a>
+    <a href="#capabilities">Решения</a>
+    <a href="#cases">Кейсы</a>
+    <a href="#method">Процесс</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <div class="mobile-menu-cta">
+    <a href="#contact">Разобрать задачу</a>
+  </div>
+  <span class="mobile-menu-foot">qXstay · Прикладная автоматизация · 2026</span>
+</div>
+
+<main id="top">
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+
+      <!-- LEFT column — text -->
+      <div class="hero-top">
+        <span class="hero-label reveal">Прикладная автоматизация · Nº 01</span>
+        <h1 class="reveal d1">Навожу порядок в&nbsp;заявках, оплатах и&nbsp;клиентах через <em>Telegram, AI и&nbsp;mini&#8209;CRM</em><span class="hero-dot" aria-hidden="true"></span></h1>
+        <p class="hero-lead reveal d2">Одна система вместо чатов, таблиц и&nbsp;ручных проверок.</p>
+        <div class="hero-cta reveal d3">
+          <a class="btn btn-primary" href="https://t.me/qxstay" target="_blank" rel="noopener noreferrer">
+            Разобрать задачу в&nbsp;Telegram
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8m0 0L7.5 3.5M11 7l-3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="https://kwork.ru/user/qxstay" target="_blank" rel="noopener noreferrer">Оформить через Kwork</a>
+        </div>
+        <div class="hero-proof reveal d4">
+          <div class="proof-badge">
+            <span class="proof-ring">3</span>
+            <span class="proof-label"><strong>Кейса</strong>в продакшене</span>
+          </div>
+          <span class="proof-chip">Python / TypeScript</span>
+          <span class="proof-chip">Telegram · AI · CRM</span>
+        </div>
+      </div>
+
+      <!-- RIGHT column — visual plate -->
+      <div class="hero-plate reveal-plate">
+        <div class="plate-frame">
+          <!-- 4 corner marks -->
+          <span class="plate-corner plate-corner--tl"></span>
+          <span class="plate-corner plate-corner--tr"></span>
+          <span class="plate-corner plate-corner--bl"></span>
+          <span class="plate-corner plate-corner--br"></span>
+          <!-- 4 annotations -->
+          <span class="plate-anno plate-anno--tl">Fig. 01</span>
+          <span class="plate-anno plate-anno--tr">Собранные системы</span>
+          <span class="plate-anno plate-anno--bl">qXstay / архив кейсов</span>
+          <span class="plate-anno plate-anno--br">Telegram · AI · CRM</span>
+          <!-- collage -->
+          <div class="collage">
+            <div class="collage-item" data-lightbox="assets/case-neurofox-ai-hero.png">
+              <span class="collage-tag">01 / NeuroFox AI</span>
+              <img src="assets/case-neurofox-ai-hero.png" alt="NeuroFox AI — AI-платформа генерации" loading="eager">
+            </div>
+            <div class="collage-item" data-lightbox="assets/case-pegas-crm-hero.png">
+              <span class="collage-tag">02 / Pegas CRM</span>
+              <img src="assets/case-pegas-crm-hero.png" alt="Pegas Auto CRM/POS" loading="eager">
+            </div>
+            <div class="collage-item" data-lightbox="assets/case-neurofox-telegram-hero.webp">
+              <span class="collage-tag">03 / Telegram Bot</span>
+              <img src="assets/case-neurofox-telegram-hero.webp" alt="NeuroFox Telegram Bot" loading="eager">
+            </div>
+          </div>
+        </div>
+        <!-- index strip -->
+        <div class="plate-index">
+          <span class="plate-index-item">01 NeuroFox AI</span>
+          <span class="plate-index-item">02 Pegas CRM</span>
+          <span class="plate-index-item">03 Telegram Bot</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ MARQUEE ═══════════════ -->
+<div class="marquee-wrap" aria-hidden="true">
+  <span class="marquee-label">Что автоматизирую</span>
+  <div class="marquee-track" id="marquee">
+    <span class="marquee-item">Telegram-боты</span>
+    <span class="marquee-item">Mini Apps</span>
+    <span class="marquee-item">AI-ассистенты</span>
+    <span class="marquee-item">CRM</span>
+    <span class="marquee-item">POS</span>
+    <span class="marquee-item">Платежи</span>
+    <span class="marquee-item">API-интеграции</span>
+    <span class="marquee-item">Боты поддержки</span>
+    <span class="marquee-item">Заявки</span>
+    <span class="marquee-item">Запись</span>
+    <span class="marquee-item">Оплаты</span>
+    <span class="marquee-item">Клиенты</span>
+    <span class="marquee-item">Уведомления</span>
+    <span class="marquee-item">AI-ответы</span>
+    <!-- duplicated for seamless loop -->
+    <span class="marquee-item">Telegram-боты</span>
+    <span class="marquee-item">Mini Apps</span>
+    <span class="marquee-item">AI-ассистенты</span>
+    <span class="marquee-item">CRM</span>
+    <span class="marquee-item">POS</span>
+    <span class="marquee-item">Платежи</span>
+    <span class="marquee-item">API-интеграции</span>
+    <span class="marquee-item">Боты поддержки</span>
+    <span class="marquee-item">Заявки</span>
+    <span class="marquee-item">Запись</span>
+    <span class="marquee-item">Оплаты</span>
+    <span class="marquee-item">Клиенты</span>
+    <span class="marquee-item">Уведомления</span>
+    <span class="marquee-item">AI-ответы</span>
+  </div>
+</div>
+
+<!-- ═══════════════ ABOUT ═══════════════ -->
+<section class="section" id="about">
+  <div class="wrap">
+    <header class="section-head">
+      <span class="eyebrow reveal">Nº 02 / Подход</span>
+      <h2 class="reveal d1">Ваш бизнес уже работает. Я&nbsp;убираю ручной труд там, где он мешает росту</h2>
+    </header>
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <p>Чат, таблица, ручная проверка: работает, пока нагрузка маленькая. Растёт бизнес, начинаются потери. Я&nbsp;перевожу такие процессы в&nbsp;систему.</p>
+      </div>
+      <ul class="about-points reveal d1">
+        <li><span class="pt-num">01</span>Начинаю с&nbsp;вашего процесса, не с&nbsp;абстрактного ТЗ.</li>
+        <li><span class="pt-num">02</span>Одно решение под конкретную боль, не «всё сразу».</li>
+        <li><span class="pt-num">03</span>AI ускоряет, но за архитектуру и&nbsp;качество отвечаю сам.</li>
+        <li><span class="pt-num">04</span>Код остаётся у&nbsp;вас. После запуска: поддержка и&nbsp;развитие.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ CAPABILITIES ═══════════════ -->
+<section class="section" id="capabilities">
+  <div class="wrap">
+    <header class="section-head">
+      <span class="eyebrow reveal">Nº 03 / Решения</span>
+      <h2 class="reveal d1">Четыре формата под разные задачи</h2>
+      <p class="lede reveal d2">Часто работают в&nbsp;связке: бот принимает, CRM ведёт, AI отвечает.</p>
+    </header>
+    <div class="caps-grid">
+      <div class="cap reveal">
+        <span class="cap-num">01</span>
+        <h3>Telegram-боты</h3>
+        <p>Собирает обращение, уточняет данные, фиксирует статус и&nbsp;передаёт нужному человеку. Заявки, запись, уведомления, оплаты.</p>
+        <span class="cap-arrow"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div class="cap reveal d1">
+        <span class="cap-num">02</span>
+        <h3>Telegram Mini Apps</h3>
+        <p>Каталог, личный кабинет, форма записи, программа лояльности. Полноценный интерфейс внутри Telegram.</p>
+        <span class="cap-arrow"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div class="cap reveal d2">
+        <span class="cap-num">03</span>
+        <h3>AI-ассистенты</h3>
+        <p>Ответы по FAQ, документам, базе знаний. Сложные вопросы передаёт менеджеру. Работает 24/7 без пауз.</p>
+        <span class="cap-arrow"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div class="cap reveal d3">
+        <span class="cap-num">04</span>
+        <h3>Mini&#8209;CRM / CRM / POS</h3>
+        <p>Клиенты, заказы, статусы, филиалы, склад, роли, зарплаты и&nbsp;отчёты. Вся рутина в&nbsp;одном месте.</p>
+        <span class="cap-arrow"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ CASES ═══════════════ -->
+<section class="section" id="cases">
+  <div class="wrap">
+    <header class="section-head">
+      <span class="eyebrow reveal">Nº 04 / Кейсы</span>
+      <h2 class="reveal d1">Три системы в&nbsp;продакшене</h2>
+      <p class="lede reveal d2">Живые проекты и&nbsp;GitHub-витрины без приватных данных.</p>
+    </header>
+
+    <div class="cases-list">
+
+      <!-- Case 01 — NeuroFox AI -->
+      <article class="case-plate reveal" data-case="neurofox-ai">
+        <div class="case-visual" data-lightbox="assets/case-neurofox-ai-detail.png">
+          <span class="case-visual-label">01 / NeuroFox AI</span>
+          <img src="assets/case-neurofox-ai-detail.png" alt="Скриншот платформы NeuroFox AI — генерация фото, видео, музыки" loading="lazy" decoding="async">
+          <span class="case-zoom-hint">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1.1"/><path d="M8.2 8.2l2.8 2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path d="M5 3.2v3.6M3.2 5h3.6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+            Открыть крупно
+          </span>
+        </div>
+        <div class="case-body">
+          <div class="case-info">
+            <span class="case-num">Кейс 01</span>
+            <h3>NeuroFox AI</h3>
+            <span class="case-kind">AI-платформа · Веб-приложение</span>
+            <p class="case-desc">Генерация фото, видео, музыки и&nbsp;AI-чат. Внутри: токены, тарифы, платежи, история и&nbsp;интеграции внешних API.</p>
+            <div class="case-chips">
+              <span class="case-chip">токены</span>
+              <span class="case-chip">тарифы</span>
+              <span class="case-chip">AI API</span>
+              <span class="case-chip">история</span>
+              <span class="case-chip">платежи</span>
+            </div>
+          </div>
+          <div class="case-actions">
+            <a class="btn btn-primary" href="https://neurofox.art" target="_blank" rel="noopener noreferrer">Открыть NeuroFox AI <span class="arr">→</span></a>
+            <a class="btn btn-ghost" href="https://github.com/qXstay/neurofox-ai" target="_blank" rel="noopener noreferrer">GitHub-витрина</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Case 02 — Pegas Auto CRM -->
+      <article class="case-plate reveal" data-case="pegas-crm">
+        <div class="case-visual" data-lightbox="assets/case-pegas-crm-detail.png">
+          <span class="case-visual-label">02 / Pegas CRM</span>
+          <img src="assets/case-pegas-crm-detail.png" alt="Скриншот CRM/POS Pegas Auto — заказы, клиенты, аналитика" loading="lazy" decoding="async">
+          <span class="case-zoom-hint">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1.1"/><path d="M8.2 8.2l2.8 2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path d="M5 3.2v3.6M3.2 5h3.6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+            Открыть крупно
+          </span>
+        </div>
+        <div class="case-body">
+          <div class="case-info">
+            <span class="case-num">Кейс 02</span>
+            <h3>Pegas Auto CRM / POS</h3>
+            <span class="case-kind">Внутренняя CRM/POS · 3 филиала</span>
+            <p class="case-desc">Полная внутренняя система для сети шиномонтажей: от&nbsp;приёма заказа до зарплатной ведомости.</p>
+            <div class="case-chips">
+              <span class="case-chip">3 филиала</span>
+              <span class="case-chip">заказы</span>
+              <span class="case-chip">клиенты</span>
+              <span class="case-chip">смены</span>
+              <span class="case-chip">склад</span>
+            </div>
+            <p class="case-note">Внутренняя система. Публичный доступ закрыт, скриншоты без приватных данных.</p>
+          </div>
+          <div class="case-actions">
+            <a class="btn btn-ghost" href="https://github.com/qXstay/pegas-auto-crm" target="_blank" rel="noopener noreferrer">GitHub-витрина</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Case 03 — NeuroFox Telegram Bot -->
+      <article class="case-plate reveal" data-case="telegram-bot">
+        <div class="case-visual" data-lightbox="assets/case-neurofox-telegram-detail.webp">
+          <span class="case-visual-label">03 / Telegram Bot</span>
+          <img src="assets/case-neurofox-telegram-detail.webp" alt="Скриншот Telegram-бота NeuroFox — генерация медиа" loading="lazy" decoding="async">
+          <span class="case-zoom-hint">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1.1"/><path d="M8.2 8.2l2.8 2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path d="M5 3.2v3.6M3.2 5h3.6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+            Открыть крупно
+          </span>
+        </div>
+        <div class="case-body">
+          <div class="case-info">
+            <span class="case-num">Кейс 03</span>
+            <h3>NeuroFox Telegram Bot</h3>
+            <span class="case-kind">Telegram AI-бот · Коммерческий</span>
+            <p class="case-desc">Telegram-интерфейс к&nbsp;NeuroFox AI: генерация медиа, AI-чат, оплата токенов и&nbsp;история — без выхода из&nbsp;мессенджера.</p>
+            <div class="case-chips">
+              <span class="case-chip">Telegram</span>
+              <span class="case-chip">токены</span>
+              <span class="case-chip">оплаты</span>
+              <span class="case-chip">генерации</span>
+            </div>
+          </div>
+          <div class="case-actions">
+            <a class="btn btn-primary" href="https://t.me/Malinovsky_AI_bot" target="_blank" rel="noopener noreferrer">Открыть бота <span class="arr">→</span></a>
+            <a class="btn btn-ghost" href="https://github.com/qXstay/neurofox-ai-telegram-bot" target="_blank" rel="noopener noreferrer">GitHub-витрина</a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ METHOD — dark room ═══════════════ -->
+<section class="method-section" id="method">
+  <div class="wrap">
+    <header class="section-head">
+      <span class="eyebrow reveal">Nº 05 / Процесс</span>
+      <h2 class="reveal d1">Как работаю</h2>
+      <p class="lede reveal d2">Четыре шага от первого сообщения до запуска.</p>
+    </header>
+    <div class="method-grid reveal">
+      <div class="method-step">
+        <span class="method-num">01 / Разбор</span>
+        <h4>Контекст</h4>
+        <p>Понимаю процесс: где теряются заявки, деньги или время. Можно текстом или голосовым.</p>
+      </div>
+      <div class="method-step">
+        <span class="method-num">02 / Схема</span>
+        <h4>Сценарии</h4>
+        <p>Фиксирую роли, статусы, данные, уведомления и&nbsp;интеграции. Предлагаю 1–2&nbsp;варианта.</p>
+      </div>
+      <div class="method-step">
+        <span class="method-num">03 / Сборка</span>
+        <h4>Реализация</h4>
+        <p>Собираю решение, тестирую на&nbsp;реальных сценариях, показываю промежуточный результат.</p>
+      </div>
+      <div class="method-step">
+        <span class="method-num">04 / Запуск</span>
+        <h4>Внедрение</h4>
+        <p>Проверка сценариев, правки, инструкция, поддержка и&nbsp;план развития.</p>
+      </div>
+    </div>
+    <div class="method-foot reveal">
+      <p class="method-foot-text">После запуска: поддержка, доработки и&nbsp;развитие.</p>
+      <a class="link" href="https://t.me/qxstay" target="_blank" rel="noopener noreferrer">Обсудить процесс <span class="arr">→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FORMATS + FAQ ═══════════════ -->
+<section class="section" id="faq">
+  <div class="wrap">
+    <header class="section-head">
+      <span class="eyebrow reveal">Nº 06 / Форматы и FAQ</span>
+      <h2 class="reveal d1">Вход, сроки и&nbsp;оплата</h2>
+      <p class="lede reveal d2">Стоимость зависит от процесса и&nbsp;интеграций. После короткого разбора: понятный старт.</p>
+    </header>
+
+    <div class="formats-row">
+      <div class="fmt reveal">
+        <span class="fmt-tag">Формат 01</span>
+        <h4>Быстрый старт</h4>
+        <p>Небольшая автоматизация под одну конкретную боль: заявка, запись, уведомление, простой бот или доработка.</p>
+      </div>
+      <div class="fmt is-rec reveal d1">
+        <span class="fmt-tag">Формат 02</span>
+        <h4>Связанная система</h4>
+        <p>Telegram-бот или Mini App плюс база заявок, роли, уведомления, оплата или интеграции между сервисами.</p>
+      </div>
+      <div class="fmt reveal d2">
+        <span class="fmt-tag">Формат 03</span>
+        <h4>Индивидуальное решение</h4>
+        <p>CRM, POS, AI-ассистент, внутренняя панель или нестандартная логика под процессы команды.</p>
+      </div>
+    </div>
+
+    <div class="faq reveal">
+      <details>
+        <summary>Как начать?</summary>
+        <div class="faq-body">Напишите в&nbsp;Telegram или на&nbsp;Kwork. Опишите, что хотите автоматизировать и&nbsp;как процесс устроен сейчас. Я&nbsp;задам уточняющие вопросы и&nbsp;предложу варианты.</div>
+      </details>
+      <details>
+        <summary>Сколько занимает запуск?</summary>
+        <div class="faq-body">Небольшая автоматизация — от нескольких дней до пары недель. Связанная система — 3–6&nbsp;недель. Точные сроки фиксирую после разбора.</div>
+      </details>
+      <details>
+        <summary>Как оформляем работу и&nbsp;поддержку?</summary>
+        <div class="faq-body">Работаю как самозанятый. Напрямую через Telegram или через безопасную сделку на&nbsp;Kwork. Этапы и&nbsp;формат согласуем до старта. Код остаётся вашим.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════ FINAL CTA ═══════════════ -->
+<section class="cta-final" id="contact">
+  <div class="wrap">
+    <span class="eyebrow reveal">Nº 07 / Контакт</span>
+    <h2 class="reveal d1">Расскажите, где сейчас теряются заявки, клиенты или оплаты</h2>
+    <p class="reveal d2">Опишите задачу. Я&nbsp;предложу решение и&nbsp;понятный план старта.</p>
+    <div class="hero-cta reveal d3">
+      <a class="btn btn-primary" href="https://t.me/qxstay" target="_blank" rel="noopener noreferrer">
+        Написать в Telegram
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8m0 0L7.5 3.5M11 7l-3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a class="btn btn-ghost" href="https://kwork.ru/user/qxstay" target="_blank" rel="noopener noreferrer">Оформить через Kwork</a>
+    </div>
+    <p class="small reveal d4">Достаточно указать нишу, задачу и&nbsp;как процесс устроен сейчас.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="footer">
+  <div class="wrap">
+    <nav class="footer-nav" aria-label="Навигация в футере">
+      <a href="#about">Подход</a>
+      <a href="#capabilities">Решения</a>
+      <a href="#cases">Кейсы</a>
+      <a href="#method">Процесс</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Контакт</a>
+    </nav>
+    <div class="footer-row">
+      <div>&copy; <span id="year"></span> qXstay. Прикладная автоматизация для малого бизнеса.</div>
+      <div class="footer-links">
+        <a href="https://t.me/qxstay" target="_blank" rel="noopener noreferrer">Telegram</a>
+        <a href="https://kwork.ru/user/qxstay" target="_blank" rel="noopener noreferrer">Kwork</a>
+        <a href="https://github.com/qXstay" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </div>
+    </div>
+    <p class="footer-tagline">Telegram-боты · Mini Apps · AI · CRM · API</p>
+  </div>
+</footer>
+
+<!-- lightbox -->
+<div class="lightbox" id="lightbox" role="dialog" aria-label="Увеличенный скриншот" aria-modal="true">
+  <div class="lightbox-card">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Закрыть">&times;</button>
+    <img id="lightboxImg" src="" alt="">
+  </div>
+</div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* year */
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  /* mobile menu — isolated overlay */
+  const burger = document.getElementById('burger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const menuClose = document.getElementById('menuClose');
+  const isMenuOpen = () => mobileMenu.classList.contains('is-open');
+  const openMenu = () => {
+    mobileMenu.classList.add('is-open');
+    burger.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('menu-open');
+  };
+  const closeMenu = () => {
+    mobileMenu.classList.remove('is-open');
+    burger.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('menu-open');
+  };
+  burger?.addEventListener('click', () => isMenuOpen() ? closeMenu() : openMenu());
+  menuClose?.addEventListener('click', closeMenu);
+  mobileMenu?.querySelectorAll('.mobile-menu-nav a, .mobile-menu-cta a').forEach(a =>
+    a.addEventListener('click', closeMenu)
+  );
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && isMenuOpen()) closeMenu();
+  });
+
+  /* headroom header */
+  const header = document.getElementById('header');
+  const progress = document.getElementById('progress');
+  let lastY = 0;
+  const onScroll = () => {
+    const y = window.scrollY;
+    header.classList.toggle('is-stuck', y > 8);
+    if (y > 300 && y > lastY + 5) {
+      header.classList.add('is-hidden');
+    } else if (y < lastY - 5 || y < 100) {
+      header.classList.remove('is-hidden');
+    }
+    lastY = y;
+    if (!reduce && progress) {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      progress.style.width = max > 0 ? (y / max * 100).toFixed(2) + '%' : '0';
+    }
+  };
+  document.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* reveal observer */
+  const revealSelector = '.reveal, .reveal-plate';
+  if (!reduce && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+    document.querySelectorAll(revealSelector).forEach(el => io.observe(el));
+  } else {
+    document.querySelectorAll(revealSelector).forEach(el => el.classList.add('is-in'));
+  }
+
+  /* scrollspy */
+  const links = [...document.querySelectorAll('.nav-links a[href^="#"]')];
+  const sections = links.map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  const spy = () => {
+    const y = window.scrollY + 120;
+    let active = null;
+    sections.forEach(s => { if (s.offsetTop <= y) active = s.id });
+    links.forEach(l => l.classList.toggle('is-active', l.getAttribute('href') === '#' + active));
+  };
+  document.addEventListener('scroll', spy, { passive: true });
+  spy();
+
+  /* lightbox */
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lightboxImg');
+  const lbCard = lb.querySelector('.lightbox-card');
+  const lbClose = document.getElementById('lightboxClose');
+  /* dark screenshots list — NeuroFox AI has dark interface */
+  const darkSrcs = ['assets/case-neurofox-ai-hero.png', 'assets/case-neurofox-ai-detail.png', 'case-neurofox-ai'];
+  const isDarkSrc = src => darkSrcs.some(d => src && src.includes(d.split('.')[0]));
+  const openLb = (src, alt) => {
+    lbImg.src = src;
+    lbImg.alt = alt || '';
+    lbCard.classList.toggle('is-dark', isDarkSrc(src));
+    lb.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  };
+  const closeLb = () => {
+    lb.classList.remove('is-open');
+    document.body.style.overflow = '';
+  };
+  document.querySelectorAll('[data-lightbox]').forEach(el => {
+    el.addEventListener('click', () => openLb(el.dataset.lightbox, el.querySelector('img')?.alt));
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLb(el.dataset.lightbox, el.querySelector('img')?.alt) }
+    });
+  });
+  lbClose.addEventListener('click', closeLb);
+  lb.addEventListener('click', e => { if (e.target === lb) closeLb() });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && lb.classList.contains('is-open')) closeLb() });
+
+  /* subtle parallax on hero plate (desktop only) */
+  if (!reduce && window.innerWidth > 768) {
+    const plate = document.querySelector('.plate-frame');
+    if (plate) {
+      document.addEventListener('scroll', () => {
+        const y = window.scrollY;
+        if (y < window.innerHeight * 1.2) {
+          plate.style.transform = 'translateY(' + (y * 0.04).toFixed(1) + 'px)';
+        }
+      }, { passive: true });
+    }
+  }
+})();
+</script>
+
+</body>
+</html>
