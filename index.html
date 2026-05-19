@@ -662,7 +662,17 @@ body.menu-open {
   }
 }
 @media (max-width: 960px) {
-  .hero-plate { margin-top: 8px }
+  .hero { --mobile-hero-extra: clamp(0px, calc((100svh - 740px) / 2), 96px) }
+  .hero-top { gap: calc(16px + var(--mobile-hero-extra) * .28) }
+  .hero-cta {
+    padding-top: calc(4px + var(--mobile-hero-extra) * .14);
+    gap: calc(12px + var(--mobile-hero-extra) * .05);
+  }
+  .hero-proof {
+    padding-top: calc(8px + var(--mobile-hero-extra) * .22);
+    gap: calc(8px + var(--mobile-hero-extra) * .05) 12px;
+  }
+  .hero-plate { margin-top: calc(24px + var(--mobile-hero-extra) * .78) }
 }
 .plate-frame {
   position: relative;
@@ -855,6 +865,9 @@ body.menu-open {
     font-size: 7.5px;
     padding: 2px 6px;
     letter-spacing: 0.04em;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(23,21,19,.74);
   }
   .plate-index {
     margin-top: 8px;
@@ -938,6 +951,21 @@ body.menu-open {
 }
 @media (prefers-reduced-motion: reduce) {
   .marquee-track { animation: none }
+}
+
+/* Mobile-only marquee inside hero-grid */
+.marquee-wrap--mobile { display: none }
+@media (max-width: 960px) {
+  .marquee-wrap--mobile {
+    display: block;
+    grid-column: 1 / -1;
+    margin: calc(10px + var(--mobile-hero-extra) * .18) calc(var(--gutter) * -1) calc(12px + var(--mobile-hero-extra) * .06);
+  }
+  .marquee-wrap:not(.marquee-wrap--mobile) { display: none }
+  .header {
+    backdrop-filter: saturate(140%) blur(8px);
+    -webkit-backdrop-filter: saturate(140%) blur(8px);
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -1257,9 +1285,9 @@ body.menu-open {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--paper-soft);
-    background: rgba(23,21,19,.62);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(23,21,19,.74);
     padding: 4px 10px;
     border-radius: 999px;
     z-index: 3;
@@ -1998,6 +2026,41 @@ body.menu-open {
           </div>
           <span class="proof-chip">Python / TypeScript</span>
           <span class="proof-chip">Telegram · AI · CRM</span>
+        </div>
+      </div>
+
+      <!-- MOBILE-ONLY marquee (between proof chips and hero deck) -->
+      <div class="marquee-wrap marquee-wrap--mobile" aria-hidden="true">
+        <div class="marquee-track">
+          <span class="marquee-item">Telegram-боты</span>
+          <span class="marquee-item">Mini Apps</span>
+          <span class="marquee-item">AI-ассистенты</span>
+          <span class="marquee-item">CRM</span>
+          <span class="marquee-item">POS</span>
+          <span class="marquee-item">Платежи</span>
+          <span class="marquee-item">API-интеграции</span>
+          <span class="marquee-item">Боты поддержки</span>
+          <span class="marquee-item">Заявки</span>
+          <span class="marquee-item">Запись</span>
+          <span class="marquee-item">Оплаты</span>
+          <span class="marquee-item">Клиенты</span>
+          <span class="marquee-item">Уведомления</span>
+          <span class="marquee-item">AI-ответы</span>
+          <!-- duplicated for seamless loop -->
+          <span class="marquee-item">Telegram-боты</span>
+          <span class="marquee-item">Mini Apps</span>
+          <span class="marquee-item">AI-ассистенты</span>
+          <span class="marquee-item">CRM</span>
+          <span class="marquee-item">POS</span>
+          <span class="marquee-item">Платежи</span>
+          <span class="marquee-item">API-интеграции</span>
+          <span class="marquee-item">Боты поддержки</span>
+          <span class="marquee-item">Заявки</span>
+          <span class="marquee-item">Запись</span>
+          <span class="marquee-item">Оплаты</span>
+          <span class="marquee-item">Клиенты</span>
+          <span class="marquee-item">Уведомления</span>
+          <span class="marquee-item">AI-ответы</span>
         </div>
       </div>
 
