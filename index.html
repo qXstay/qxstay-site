@@ -1829,6 +1829,27 @@ body.menu-open {
 }
 
 /* ═══════════════════════════════════════════════
+   MOBILE REVEAL DISABLE — prevent cold-scroll blank blocks
+   in Telegram WebView. Desktop reveal preserved.
+   ═══════════════════════════════════════════════ */
+@media (max-width: 960px) {
+  .reveal,
+  .reveal-plate {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .reveal-plate .collage-item {
+    opacity: 1 !important;
+    transition: none !important;
+  }
+  /* Keep mobile collage fan-card opacities */
+  .collage-item:nth-child(1) { opacity: .78 !important }
+  .collage-item:nth-child(2) { opacity: .78 !important }
+  .collage-item:nth-child(3) { opacity: 1 !important }
+}
+
+/* ═══════════════════════════════════════════════
    LIGHTBOX — image-first, card wraps content
    ═══════════════════════════════════════════════ */
 .lightbox {
