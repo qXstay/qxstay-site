@@ -977,6 +977,16 @@ body.menu-open {
   }
 }
 
+/* ── iOS-only fallback: keep header visible to prevent
+   Telegram WebView "brow" flicker on scroll ── */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 960px) {
+    .header.is-hidden {
+      transform: none;
+    }
+  }
+}
+
 /* ═══════════════════════════════════════════════
    ABOUT
    ═══════════════════════════════════════════════ */
