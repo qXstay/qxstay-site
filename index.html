@@ -2502,6 +2502,7 @@ body.menu-open {
   const header = document.getElementById('header');
   const progress = document.getElementById('progress');
   let lastY = 0, ticking = false;
+  let mUp = 0, mDown = 0;
   const mobileQ = window.matchMedia('(max-width: 960px)');
   const onScroll = () => {
     if (ticking) return;
@@ -2510,13 +2511,25 @@ body.menu-open {
       ticking = false;
       const y = window.scrollY;
       const mob = mobileQ.matches;
-      const delta = mob ? 14 : 5;
-      const hideAfter = mob ? 220 : 300;
       header.classList.toggle('is-stuck', y > 8);
-      if (y > hideAfter && y > lastY + delta) {
-        header.classList.add('is-hidden');
-      } else if (y < lastY - delta || y < 100) {
-        header.classList.remove('is-hidden');
+      if (mob) {
+        const dy = y - lastY;
+        if (Math.abs(dy) < 2) { /* ignore micro-jitter */ }
+        else if (dy > 0) { mDown += dy; mUp = 0; }
+        else              { mUp   -= dy; mDown = 0; }
+        if (y > 220 && mDown >= 24) {
+          header.classList.add('is-hidden');
+          mDown = 0;
+        } else if (y < 100 || mUp >= 56) {
+          header.classList.remove('is-hidden');
+          mUp = 0;
+        }
+      } else {
+        if (y > 300 && y > lastY + 5) {
+          header.classList.add('is-hidden');
+        } else if (y < lastY - 5 || y < 100) {
+          header.classList.remove('is-hidden');
+        }
       }
       lastY = y;
       if (!reduce && progress) {
