@@ -970,7 +970,7 @@ body.menu-open {
     -webkit-backdrop-filter: none;
   }
   .header.is-hidden {
-    transform: none;
+    transform: translateY(-100%);
   }
   .progress {
     display: none;
@@ -2501,20 +2501,29 @@ body.menu-open {
   /* headroom header */
   const header = document.getElementById('header');
   const progress = document.getElementById('progress');
-  let lastY = 0;
+  let lastY = 0, ticking = false;
+  const mobileQ = window.matchMedia('(max-width: 960px)');
   const onScroll = () => {
-    const y = window.scrollY;
-    header.classList.toggle('is-stuck', y > 8);
-    if (y > 300 && y > lastY + 5) {
-      header.classList.add('is-hidden');
-    } else if (y < lastY - 5 || y < 100) {
-      header.classList.remove('is-hidden');
-    }
-    lastY = y;
-    if (!reduce && progress) {
-      const max = document.documentElement.scrollHeight - innerHeight;
-      progress.style.width = max > 0 ? (y / max * 100).toFixed(2) + '%' : '0';
-    }
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false;
+      const y = window.scrollY;
+      const mob = mobileQ.matches;
+      const delta = mob ? 14 : 5;
+      const hideAfter = mob ? 220 : 300;
+      header.classList.toggle('is-stuck', y > 8);
+      if (y > hideAfter && y > lastY + delta) {
+        header.classList.add('is-hidden');
+      } else if (y < lastY - delta || y < 100) {
+        header.classList.remove('is-hidden');
+      }
+      lastY = y;
+      if (!reduce && progress) {
+        const max = document.documentElement.scrollHeight - innerHeight;
+        progress.style.width = max > 0 ? (y / max * 100).toFixed(2) + '%' : '0';
+      }
+    });
   };
   document.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
