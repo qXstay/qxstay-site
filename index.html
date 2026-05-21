@@ -981,6 +981,11 @@ body.menu-open {
    Telegram WebView "brow" flicker on scroll ── */
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 960px) {
+    .header {
+      position: relative;
+      top: auto;
+      transform: none;
+    }
     .header.is-hidden {
       transform: none;
     }
